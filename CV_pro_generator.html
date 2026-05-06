@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@400;600&family=Montserrat:wght@300;400;500;600&family=Lato:wght@300;400;700&family=Raleway:wght@300;400;500;600&family=Source+Serif+4:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#ffffff;--surface2:#f0efe9;--border:#e2e0d8;
+  --text:#1a1917;--text2:#5a5850;--text3:#9a9890;
+  --accent:#1e3a5f;--accent2:#c9a84c;--accent-light:#e8eef5;
+  --danger:#c0392b;--success:#27ae60;
+  --shadow:0 2px 12px rgba(0,0,0,0.08);
+  --radius:10px;--radius-sm:6px;
+  --font-ui:'DM Sans',sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#0f0f0d;--surface:#1a1917;--surface2:#242320;--border:#333230;
+  --text:#f0efe9;--text2:#a0a090;--text3:#606050;
+  --accent:#4a8fd4;--accent2:#e6c76a;--accent-light:#1a2535;
+  --shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.3s,color 0.3s}
+
+/* LAYOUT */
+.shell{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent);letter-spacing:-0.3px}
+.topbar-logo span{color:var(--accent2)}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{background:none;border:1px solid var(--border);border-radius:var(--radius-sm);width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:15px;transition:all 0.15s}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+
+.main{display:flex;flex:1;gap:0}
+.sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);padding:1.25rem 0;overflow-y:auto;display:flex;flex-direction:column}
+.nav-section-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text3);padding:0.75rem 1.25rem 0.35rem;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 1.25rem;cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.15s;border-left:3px solid transparent;user-select:none}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent);border-left-color:var(--accent);font-weight:500}
+.nav-item .nav-icon{width:28px;height:28px;background:var(--surface2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.nav-item.active .nav-icon{background:var(--accent-light)}
+
+.content{flex:1;padding:1.5rem;overflow-y:auto;max-height:calc(100vh - 52px)}
+.panel{display:none}
+.panel.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1rem}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.card-title{font-size:13px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.06em}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-grid.full{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:4px}
+label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+input,textarea,select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 11px;font-size:13px;font-family:var(--font-ui);color:var(--text);width:100%;transition:border 0.15s,box-shadow 0.15s;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+textarea{min-height:80px;resize:vertical;line-height:1.5}
+select option{background:var(--surface)}
+
+/* PILLS */
+.pills-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.pills-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--text2);cursor:pointer;transition:all 0.15s;user-select:none}
+.pill:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* BLOCKS */
+.block-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;position:relative}
+.block-remove{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:2px 6px;border-radius:4px;font-family:var(--font-ui)}
+.block-remove:hover{color:var(--danger);background:rgba(192,57,43,0.08)}
+.add-block-btn{width:100%;background:none;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:9px;font-size:12px;cursor:pointer;color:var(--text3);font-family:var(--font-ui);transition:all 0.15s;margin-top:4px}
+.add-block-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+
+/* SECTORS */
+.sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.sector-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 8px;cursor:pointer;text-align:center;transition:all 0.15s;user-select:none}
+.sector-card:hover{border-color:var(--accent);background:var(--accent-light)}
+.sector-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.sector-card .s-icon{font-size:22px;display:block;margin-bottom:5px}
+.sector-card .s-name{font-size:11px;color:var(--text2);font-weight:500;line-height:1.3}
+.sector-card.selected .s-name{color:var(--accent)}
+
+/* PHOTO */
+.photo-zone{width:90px;height:110px;border:2px dashed var(--border);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:border 0.15s;flex-shrink:0}
+.photo-zone:hover{border-color:var(--accent)}
+.photo-zone img{width:100%;height:100%;object-fit:cover}
+.photo-zone .ph-label{font-size:10px;color:var(--text3);text-align:center;padding:4px;line-height:1.3}
+
+/* BUTTONS */
+.btn{border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;font-family:var(--font-ui);cursor:pointer;background:var(--surface);color:var(--text);transition:all 0.15s;font-weight:500}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:#1a3254;border-color:#1a3254}
+.btn-gold{background:var(--accent2);color:#1a1000;border-color:var(--accent2)}
+.btn-gold:hover{opacity:0.9}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-row{display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap}
+
+/* SETTINGS */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13px;color:var(--text)}
+.settings-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.toggle{width:42px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.25)}
+.toggle.on::after{left:21px}
+
+/* FONT PREVIEW */
+.font-option{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.font-option:hover{border-color:var(--accent);background:var(--accent-light)}
+.font-option.selected{border-color:var(--accent);background:var(--accent-light)}
+.font-preview{font-size:15px;color:var(--text)}
+.font-meta{font-size:11px;color:var(--text3)}
+
+/* COLOR THEME */
+.color-options{display:flex;gap:8px;flex-wrap:wrap}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.15s}
+.color-dot.selected{border-color:var(--text);transform:scale(1.15)}
+
+/* PROGRESS STEPS */
+.step-nav{display:flex;gap:4px;margin-bottom:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px}
+.step-btn{flex:1;text-align:center;padding:7px 4px;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;color:var(--text3);font-weight:500;transition:all 0.15s;white-space:nowrap}
+.step-btn:hover{color:var(--text);background:var(--surface2)}
+.step-btn.active{background:var(--accent);color:#fff}
+
+/* CV PREVIEW */
+.cv-wrap{background:#fff;color:#222;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow)}
+.cv-inner{padding:2rem 2.25rem;max-width:800px;margin:0 auto;font-size:12px;line-height:1.6}
+.cv-header{display:flex;gap:20px;align-items:flex-start;margin-bottom:16px;border-bottom:2.5px solid currentColor;padding-bottom:14px}
+.cv-photo-box{width:80px;height:95px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#eee;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;text-align:center}
+.cv-photo-box img{width:100%;height:100%;object-fit:cover}
+.cv-name-block{flex:1}
+.cv-fullname{font-size:24px;font-weight:700;line-height:1.1;margin-bottom:3px}
+.cv-jobtitle{font-size:14px;font-weight:400;opacity:0.7;margin-bottom:8px}
+.cv-contact-row{font-size:11px;opacity:0.65;display:flex;flex-wrap:wrap;gap:6px 16px}
+.cv-section-title{font-size:9px;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;border-bottom:1.5px solid currentColor;padding-bottom:3px;margin:14px 0 8px}
+.cv-profile{font-size:12px;line-height:1.6}
+.cv-job-title{font-size:13px;font-weight:600}
+.cv-job-meta{font-size:11px;opacity:0.65;margin:1px 0 4px}
+.cv-bullet{font-size:11px;padding-left:12px;position:relative;margin-bottom:2px}
+.cv-bullet::before{content:'▪';position:absolute;left:0;opacity:0.6}
+.cv-skills-grid{display:flex;flex-wrap:wrap;gap:4px}
+.cv-skill{border-radius:3px;padding:2px 8px;font-size:10px;font-weight:500}
+.cv-two-col{display:grid;grid-template-columns:2fr 1fr;gap:24px}
+.cv-tag{display:inline-block;border-radius:3px;padding:2px 8px;font-size:10px;margin:2px}
+.cv-lang-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+
+/* PRINT */
+@media print{
+  body{background:white!important}
+  .shell{display:block}
+  .topbar,.sidebar,.content>*:not(#panel-preview){display:none!important}
+  #panel-preview{display:block!important}
+  .card,.btn-row,.cv-export-bar{display:none!important}
+  .cv-wrap{border:none;box-shadow:none;border-radius:0}
+  .cv-inner{padding:1.5cm 2cm}
+  .panel.active{display:block!important}
+}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.tab-btn{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.15s;font-weight:500;font-family:var(--font-ui);background:none;border-top:none;border-left:none;border-right:none}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* BADGE */
+.badge{display:inline-block;background:var(--accent);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;margin-left:4px}
+.badge-gold{background:var(--accent2);color:#1a1000}
+
+/* INFO BOX */
+.info-box{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:1rem;line-height:1.5}
+
+.cv-export-bar{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:1rem}
+.cv-export-label{font-size:12px;color:var(--text2)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .sidebar{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .cv-two-col{grid-template-columns:1fr}
+}
+</style>
+
+<div class="shell">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">CV<span>Pro</span></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="toggleTheme()" title="Modo claro/oscuro" id="theme-btn">🌙</button>
+    <button class="btn btn-sm btn-gold" onclick="exportPDF()">⬇ Exportar PDF</button>
+  </div>
+</div>
+
+<div class="main">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="nav-section-label">Currículum</div>
+  <div class="nav-item active" onclick="showPanel('panel-sector',this)">
+    <div class="nav-icon">🎯</div> Sector & Puesto
+  </div>
+  <div class="nav-item" onclick="showPanel('panel-personal',this)">
+    <div class="nav-icon">👤</div> Datos personales
+  </div>
+  <div class="nav-item" onclick="showPanel('panel-perfil',this)">
+    <div class="nav-icon">✍️</div> Perfil profesional
+  </div>
+  <div class="nav-item" onclick="showPanel('panel-exp',this)">
+    <div class="nav-icon">💼</div> Experiencia laboral
+  </div>
+  <div class="nav-item" onclick="showPanel('panel-edu',this)">
+    <div class="nav-icon">🎓</div> Formación
+  </div>
+  <div class="nav-item" onclick="showPanel('panel-skills',this)">
+    <div class="nav-icon">⚡</div> Habilidades & Idiomas
+  </div>
+  <div class="nav-section-label" style="margin-top:8px">Diseño</div>
+  <div class="nav-item" onclick="showPanel('panel-design',this)">
+    <div class="nav-icon">🎨</div> Estilo & Fuente
+  </div>
+  <div class="nav-section-label" style="margin-top:8px">Vista final</div>
+  <div class="nav-item" onclick="showPanel('panel-preview',this);buildPreview()">
+    <div class="nav-icon">👁</div> Vista previa & PDF
+  </div>
+  <div style="flex:1"></div>
+  <div style="padding:1rem;font-size:11px;color:var(--text3);border-top:1px solid var(--border)">
+    Manual: brevedad, impacto y keywords.<br>Máx. 2 páginas. Fuente sans-serif.
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- SECTOR -->
+<div id="panel-sector" class="panel active">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Oferta de trabajo</span></div>
+    <div class="form-grid full">
+      <div class="form-group">
+        <label>Título del puesto en la oferta</label>
+        <input type="text" id="oferta-titulo" placeholder="Ej: Desarrollador Full Stack Senior, Enfermera UCI, Técnico de Marketing…">
+      </div>
+    </div>
+    <div class="form-grid full">
+      <div class="form-group">
+        <label>Keywords clave de la oferta (ATS)</label>
+        <input type="text" id="oferta-keywords" placeholder="Ej: React, liderazgo, inglés C1, Agile…">
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Sector / Área <span class="badge">elige uno</span></span></div>
+    <div class="sector-grid" id="sector-grid"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="showPanel('panel-personal',document.querySelectorAll('.nav-item')[1])">Siguiente: Datos personales →</button>
+  </div>
+</div>
+
+<!-- PERSONAL -->
+<div id="panel-personal" class="panel">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Foto de perfil</span><span class="badge-gold badge">Opcional</span></div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <div class="photo-zone" id="photo-zone" onclick="document.getElementById('photo-input').click()">
+        <div class="ph-label">📷<br>Clic para<br>subir foto</div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);line-height:1.6">
+        <strong style="color:var(--text2)">Recomendaciones:</strong><br>
+        • Fondo neutro, iluminación frontal<br>
+        • Ropa profesional y seria<br>
+        • Sin fotos de vacaciones o eventos<br>
+        • En España: habitual pero no obligatorio
+      </div>
+    </div>
+    <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="loadPhoto(event)">
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Información personal</span></div>
+    <div class="form-grid">
+      <div class="form-group"><label>Nombre completo *</label><input type="text" id="nombre" placeholder="Ana García López"></div>
+      <div class="form-group"><label>Puesto objetivo *</label><input type="text" id="puesto" placeholder=""></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Email *</label><input type="email" id="email" placeholder="ana.garcia@email.com"></div>
+      <div class="form-group"><label>Teléfono</label><input type="text" id="telefono" placeholder="+34 600 000 000"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Ciudad</label><input type="text" id="ciudad" placeholder="Madrid"></div>
+      <div class="form-group"><label>LinkedIn / Portfolio / Web</label><input type="text" id="linkedin" placeholder="linkedin.com/in/anagarcia"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Carnet de conducir</label>
+        <select id="carnet">
+          <option value="">Sin carnet / No incluir</option>
+          <option value="Permiso de conducción: A">A – Motocicletas</option>
+          <option value="Permiso de conducción: B">B – Turismo (más común)</option>
+          <option value="Permiso de conducción: B + C">B + C – Turismo y camiones</option>
+          <option value="Permiso de conducción: B + D">B + D – Turismo y autobuses</option>
+          <option value="Permiso de conducción: C">C – Camiones</option>
+          <option value="Permiso de conducción: C + E">C + E – Camiones con remolque</option>
+          <option value="Permiso de conducción: D">D – Autobuses</option>
+          <option value="Permiso de conducción: B (vehículo propio)">B + Vehículo propio</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Nacionalidad (opcional)</label><input type="text" id="nacionalidad" placeholder="Española"></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-sector',document.querySelectorAll('.nav-item')[0])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-perfil',document.querySelectorAll('.nav-item')[2])">Siguiente →</button>
+  </div>
+</div>
+
+<!-- PERFIL -->
+<div id="panel-perfil" class="panel">
+  <div class="info-box">💡 El <strong>perfil profesional</strong> es lo primero que lee el reclutador (6-10 seg). Escribe lo que <strong>aportas</strong>, no lo que buscas. Incluye años de experiencia y un logro cuantificable.</div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Tu pitch profesional</span></div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Perfil profesional (3-4 líneas) *</label>
+      <textarea id="perfil" rows="4" placeholder="Escribe aquí o haz clic en una sugerencia…"></textarea>
+    </div>
+    <div class="pills-label">Sugerencias para <span id="sector-name-perfil">tu sector</span>:</div>
+    <div class="pills-wrap" id="perfil-pills"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-personal',document.querySelectorAll('.nav-item')[1])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-exp',document.querySelectorAll('.nav-item')[3])">Siguiente →</button>
+  </div>
+</div>
+
+<!-- EXPERIENCIA -->
+<div id="panel-exp" class="panel">
+  <div class="info-box">✅ Usa <strong>logros cuantificables</strong> en lugar de solo enumerar funciones. Ej: "Lideré equipo de 8 personas logrando un +25% en ventas" en lugar de "Gestioné el equipo de ventas".</div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Experiencia laboral</span></div>
+    <div id="exp-list"></div>
+    <button class="add-block-btn" onclick="addExp()">+ Añadir experiencia</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Ejemplos de logros para <span id="logros-sector-name">tu sector</span></span></div>
+    <div class="pills-label">Haz clic para insertar en la última experiencia:</div>
+    <div class="pills-wrap" id="logros-pills"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-perfil',document.querySelectorAll('.nav-item')[2])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-edu',document.querySelectorAll('.nav-item')[4])">Siguiente →</button>
+  </div>
+</div>
+
+<!-- FORMACION -->
+<div id="panel-edu" class="panel">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Formación académica</span></div>
+    <div id="edu-list"></div>
+    <button class="add-block-btn" onclick="addEdu()">+ Añadir formación</button>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Formación complementaria</span></div>
+    <div id="cert-list"></div>
+    <button class="add-block-btn" onclick="addCert()">+ Añadir certificación / curso</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-exp',document.querySelectorAll('.nav-item')[3])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-skills',document.querySelectorAll('.nav-item')[5])">Siguiente →</button>
+  </div>
+</div>
+
+<!-- SKILLS -->
+<div id="panel-skills" class="panel">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Habilidades técnicas (Hard Skills)</span></div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Añade separando con comas</label>
+      <input type="text" id="hard-skills" placeholder="Ej: Python, Excel avanzado, Google Analytics, AutoCAD…">
+    </div>
+    <div class="pills-label">Sugeridas para <span id="hard-sector-name">tu sector</span>:</div>
+    <div class="pills-wrap" id="hard-pills"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Habilidades interpersonales (Soft Skills)</span></div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Añade separando con comas</label>
+      <input type="text" id="soft-skills" placeholder="Ej: liderazgo, comunicación, trabajo en equipo…">
+    </div>
+    <div class="pills-wrap" id="soft-pills"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Idiomas</span></div>
+    <div id="lang-list"></div>
+    <button class="add-block-btn" onclick="addLang()">+ Añadir idioma</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-edu',document.querySelectorAll('.nav-item')[4])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-design',document.querySelectorAll('.nav-item')[6])">Siguiente →</button>
+  </div>
+</div>
+
+<!-- DESIGN -->
+<div id="panel-design" class="panel">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Color de acento</span></div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Según el sector: azul marino para finanzas/derecho, verde para salud/sostenibilidad, gris para elegancia.</p>
+    <div class="color-options" id="color-opts"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title">Tipografía</span></div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Usa fuentes sans-serif para mayor legibilidad en pantalla. Evita Times New Roman y Comic Sans.</p>
+    <div id="font-opts"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="showPanel('panel-skills',document.querySelectorAll('.nav-item')[5])">← Atrás</button>
+    <button class="btn btn-primary" onclick="showPanel('panel-preview',document.querySelectorAll('.nav-item')[7]);buildPreview()">Ver mi CV →</button>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div id="panel-preview" class="panel">
+  <div class="cv-export-bar">
+    <div>
+      <div class="cv-export-label" style="font-weight:600;color:var(--text)">Vista previa de tu currículum</div>
+      <div class="cv-export-label">Revisa el resultado. Para imprimir, selecciona «Guardar como PDF» en el diálogo.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm" onclick="buildPreview()">🔄 Actualizar</button>
+      <button class="btn btn-sm btn-gold" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
+  </div>
+  <div class="cv-wrap" id="cv-preview-box"></div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+const SECTORS = [
+  {id:'tech',name:'Tecnología / IT',icon:'💻',
+   pitches:[
+     'Desarrollador/a Full Stack con {X} años de experiencia en React y Node.js, entregando productos escalables y reduciendo bugs en un 30% mediante TDD y code reviews sistemáticos.',
+     'Especialista en ciberseguridad con experiencia protegiendo infraestructuras de +500 usuarios y reduciendo incidentes de seguridad en un 40% mediante auditorías proactivas.',
+     'Ingeniero/a de datos con {X} años diseñando pipelines ETL que procesan 10M+ registros diarios, optimizando costes de infraestructura cloud en un 25%.',
+     'DevOps Engineer con historial de reducir tiempos de despliegue de 2 horas a 8 minutos mediante CI/CD en AWS, mejorando la disponibilidad del sistema al 99,95%.'
+   ],
+   logros:[
+     'Reduje el tiempo de carga de la aplicación un 60% optimizando queries SQL y cachés Redis.',
+     'Implementé CI/CD que redujo los deploys fallidos del 15% a menos del 2% en 3 meses.',
+     'Lideré la migración a la nube de 3 sistemas legacy, ahorrando 20.000€/año en infraestructura.',
+     'Desarrollé una API REST que procesa 10.000 peticiones/seg con 99,9% de uptime.',
+     'Automaticé procesos manuales con Python, ahorrando 15 horas semanales al equipo.',
+     'Aumenté la cobertura de tests del 12% al 80% en 4 meses, reduciendo regresiones críticas.',
+     'Diseñé arquitectura de microservicios para equipo de 20 devs, mejorando el tiempo de entrega un 40%.',
+     'Resolví deuda técnica crítica que bloqueaba 3 proyectos, liberando capacidad para nuevas funcionalidades.'
+   ],
+   hardSkills:'JavaScript, Python, React, Node.js, SQL, Docker, Kubernetes, Git, AWS/Azure, Scrum/Agile, inglés B2',
+   softSkills:'resolución de problemas, trabajo en equipo ágil, aprendizaje continuo, comunicación técnica'
+  },
+  {id:'marketing',name:'Marketing / Comunicación',icon:'📣',
+   pitches:[
+     'Especialista en Marketing Digital con {X} años aumentando el ROI en un 20% para marcas del sector retail mediante estrategias integradas de SEO, SEM y redes sociales.',
+     'Community Manager con probada capacidad de hacer crecer comunidades desde 0 hasta 50.000 seguidores en 12 meses, generando engagement 3x superior a la media del sector.',
+     'Director/a de Comunicación con experiencia liderando equipos de 8 personas y gestionando crisis de reputación para marcas con presencia en 5 mercados europeos.',
+     'Especialista en contenidos B2B con historial de generar 500+ leads cualificados/mes mediante estrategia de inbound marketing y automatización con HubSpot.'
+   ],
+   logros:[
+     'Aumenté el tráfico orgánico un 150% en 6 meses mediante estrategia de contenidos SEO.',
+     'Diseñé campaña de email marketing con tasa de apertura del 42% (media del sector: 21%).',
+     'Gestioné presupuesto publicitario de 80.000€/año con ROAS medio de 4,2.',
+     'Crecí la cuenta de Instagram de 2.000 a 35.000 seguidores en 8 meses con contenido orgánico.',
+     'Lancé campaña de lanzamiento de producto con 0€ en paid que generó 1.200 leads en 72 horas.',
+     'Implementé estrategia de SEO local que posicionó 15 keywords en top 3 de Google en 4 meses.',
+     'Creé embudo de ventas automatizado que convierte el 8% de leads (vs 3% previo).',
+     'Coordiné evento corporativo de 500 asistentes con NPS de 4,6/5 y cobertura en 3 medios nacionales.'
+   ],
+   hardSkills:'Google Analytics 4, Meta Ads, Google Ads, HubSpot, SEO/SEM, Canva Pro, Mailchimp, Semrush, inglés C1',
+   softSkills:'creatividad, gestión de proyectos, storytelling, orientación a resultados, análisis de datos'
+  },
+  {id:'ventas',name:'Ventas / Comercial',icon:'🤝',
+   pitches:[
+     'Comercial B2B con historial de superar objetivos de ventas en un 25% durante 3 años consecutivos en el sector tecnológico, gestionando cartera de 60 cuentas.',
+     'Key Account Manager especializado en fidelización, reduciendo la tasa de churn al 8% y aumentando el ticket medio un 30% en cartera de 50 cuentas estratégicas.',
+     'Director/a Comercial con 10 años liderando equipos de ventas de hasta 15 personas, escalando la facturación de 2M€ a 8M€ en 4 años mediante expansión a nuevos mercados.',
+     'Inside Sales Specialist con metodología consultiva, convirtiendo el 35% de demos en contratos firmados y reduciendo el ciclo de venta de 90 a 45 días.'
+   ],
+   logros:[
+     'Superé el objetivo de ventas anuales en un 30%, alcanzando 1,2M€ de facturación.',
+     'Amplié la cartera de clientes en 40 nuevas cuentas en el primer año, generando 300K€ en nuevos ingresos.',
+     'Reduje el ciclo de venta promedio de 90 a 45 días mediante nueva metodología consultiva.',
+     'Negocié contratos marco con 5 clientes estratégicos por valor acumulado de 500K€.',
+     'Recuperé 8 cuentas perdidas con un plan de winback que generó 120K€ adicionales.',
+     'Formé a 4 comerciales júnior que lograron el 100% de sus objetivos en el primer trimestre.',
+     'Implementé CRM Salesforce en el equipo, mejorando la visibilidad del pipeline en un 80%.',
+     'Abrí mercado en Portugal consiguiendo 15 clientes y 200K€ en el primer año de operaciones.'
+   ],
+   hardSkills:'Salesforce, HubSpot CRM, LinkedIn Sales Navigator, Excel, PowerPoint, técnicas de negociación, inglés B2',
+   softSkills:'persuasión, escucha activa, resiliencia, orientación al cliente, gestión del tiempo'
+  },
+  {id:'rrhh',name:'RR.HH. / Personas',icon:'👥',
+   pitches:[
+     'HR Business Partner con experiencia en transformación cultural para organizaciones de +500 empleados, reduciendo la rotación voluntaria un 35% en 2 años.',
+     'Técnico/a de Selección especializado en perfiles tech con tiempo medio de cobertura de 18 días y tasa de retención al año del 92%.',
+     'Responsable de RRHH generalista con {X} años gestionando todo el ciclo de vida del empleado en pymes de 50-200 personas, desde contratación hasta desvinculación.',
+     'Especialista en Desarrollo de Talento que ha diseñado e impartido programas formativos para +300 personas, con NPS promedio de 4,8/5.'
+   ],
+   logros:[
+     'Reduje la rotación de personal un 35% implementando plan de bienestar y planes de carrera individuales.',
+     'Cubrí 120 posiciones en un año con un coste por contratación un 20% inferior al sector.',
+     'Diseñé programa de onboarding que redujo el periodo de adaptación de 3 meses a 6 semanas.',
+     'Implanté evaluación de desempeño 360° para 200 empleados con 90% de participación.',
+     'Negocié convenio colectivo que mejoró condiciones salariales con un incremento del 8% en 2 años.',
+     'Implementé plataforma de e-learning logrando 85% de finalización en formaciones obligatorias.',
+     'Lancé programa de diversidad e inclusión que aumentó contratación de perfiles diversos un 40%.',
+     'Creé sistema de encuesta de clima laboral que elevó el eNPS de 18 a 45 en 18 meses.'
+   ],
+   hardSkills:'SAP HR, Workday, Personio, entrevista por competencias, Excel, nóminas, derecho laboral, inglés B2',
+   softSkills:'empatía, discreción, influencia sin autoridad, comunicación asertiva, gestión del conflicto'
+  },
+  {id:'finanzas',name:'Finanzas / Banca',icon:'💼',
+   pitches:[
+     'Controller financiero con {X} años de experiencia en reporting y análisis de desviaciones para grupos empresariales con más de 100M€ de facturación.',
+     'Analista financiero especializado en M&A, con participación en due diligence de transacciones por valor acumulado de 200M€ en sectores industrial y tecnológico.',
+     'CFO / Director/a Financiero con historial de reestructuración financiera, reduciendo el endeudamiento neto un 40% en 3 años y mejorando el EBITDA un 15%.',
+     'Auditor/a con 6 años en Big4, especializado en auditoría de entidades financieras y revisión de sistemas de control interno para grupos cotizados.'
+   ],
+   logros:[
+     'Reduje el tiempo de cierre contable mensual de 10 a 4 días automatizando procesos con Power Query.',
+     'Detecté ineficiencias operativas que supusieron un ahorro de 150.000€ anuales.',
+     'Gestioné tesorería de grupo con 15 sociedades y 40M€ en circulante, optimizando el cash pooling.',
+     'Implementé modelo de previsión financiera que mejoró la precisión del forecast trimestral al 95%.',
+     'Negocié refinanciación de deuda de 8M€ reduciendo el coste financiero en 180 puntos básicos.',
+     'Preparé cuadro de mando financiero en Power BI que mejoró la toma de decisiones del comité directivo.',
+     'Lideré auditoría interna que identificó 12 riesgos críticos y redujo exposición fiscal en 200K€.',
+     'Coordiné el proceso de consolidación de 8 filiales internacionales bajo NIIF en un tiempo récord de 5 días.'
+   ],
+   hardSkills:'Excel avanzado, SAP FI/CO, Power BI, consolidación contable, NIIF, inglés C1, Bloomberg (valoración)',
+   softSkills:'precisión analítica, rigor, gestión bajo presión, confidencialidad, comunicación con directivos'
+  },
+  {id:'salud',name:'Salud / Sanidad',icon:'🏥',
+   pitches:[
+     'Enfermero/a especialista en UCI con {X} años de experiencia en unidades de alta complejidad y participación activa en la mejora de protocolos de sepsis y manejo del dolor.',
+     'Médico/a de familia con {X} años en atención primaria gestionando un cupo de 1.800 pacientes, con especial enfoque en prevención cardiovascular y cronicidad.',
+     'Fisioterapeuta con experiencia en rehabilitación musculoesquelética y deportiva, tratando +15 pacientes diarios con tasa de alta satisfactoria del 94%.',
+     'Técnico/a en laboratorio clínico con 6 años en bioquímica y hematología, gestionando un volumen de 500 analíticas diarias con tasa de error inferior al 0,1%.'
+   ],
+   logros:[
+     'Coordiné equipo de 12 enfermeros durante turno de noche, reduciendo incidentes adversos un 25%.',
+     'Participé en protocolo de mejora que redujo la tasa de infecciones nosocomiales al 1,2% (vs 2,8% previo).',
+     'Formé a 30 residentes en técnicas de cuidados intensivos y manejo del ventilador en 2 años.',
+     'Implementé checklist quirúrgico que redujo errores de medicación un 40% en área de cirugía.',
+     'Reorganicé el stock de farmacia reduciendo caducidades un 70% y ahorrando 8.000€/año.',
+     'Lideré proyecto de humanización que mejoró la puntuación de satisfacción del paciente de 7,2 a 9,1.',
+     'Reduje el tiempo de espera en urgencias en 22 minutos mediante triaje mejorado.',
+     'Coordiné campaña de vacunación para 3.000 pacientes con logística de cita y seguimiento incluido.'
+   ],
+   hardSkills:'Historia clínica digital (SAP ISH, Selene, Orion), BLS/ACLS/SVB, inglés sanitario B2, ventilación mecánica, EKG',
+   softSkills:'trabajo bajo presión, empatía, comunicación con pacientes y familias, atención al detalle, trabajo en equipo multidisciplinar'
+  },
+  {id:'educacion',name:'Educación / Formación',icon:'📚',
+   pitches:[
+     'Docente de Matemáticas con metodología basada en proyectos y gamificación, logrando una tasa de aprobados del 95% en Bachillerato y reduciendo el abandono escolar un 30%.',
+     'Formador/a corporativo con {X} años diseñando programas de upskilling y reskilling para equipos técnicos de +500 personas, con NPS promedio de 4,7/5.',
+     'Director/a de centro educativo con experiencia en gestión de equipos de 40+ docentes y liderazgo de procesos de innovación pedagógica reconocidos a nivel autonómico.',
+     'Orientador/a laboral especializado en inserción de colectivos vulnerables, con tasa de empleabilidad del 68% en menos de 6 meses.'
+   ],
+   logros:[
+     'Aumenté la tasa de aprobados en mi asignatura del 72% al 91% en dos cursos con metodología activa.',
+     'Diseñé plan formativo para 200 empleados en competencias digitales con NPS de 4,7/5.',
+     'Coordiné departamento de 8 docentes, mejorando los resultados EBAU un 15% en 3 años.',
+     'Creé 40 horas de contenido e-learning con tasa de finalización del 85%, superior al 60% del sector.',
+     'Implementé flipped classroom en 4 grupos, reduciendo las faltas de disciplina un 50%.',
+     'Obtuve financiación europea de 30.000€ para proyecto de innovación educativa con tecnología.',
+     'Coordiné prácticum de 25 estudiantes en empresas con 90% de satisfacción de tutores externos.',
+     'Diseñé currículum formativo aprobado por el SEPE para impartir certificado de profesionalidad.'
+   ],
+   hardSkills:'Moodle, Google Classroom, Teams, diseño instruccional, Canva, Microsoft 365, inglés B2, estadística educativa',
+   softSkills:'comunicación pedagógica, adaptabilidad, motivación de grupos, paciencia, liderazgo docente'
+  },
+  {id:'legal',name:'Legal / Jurídico',icon:'⚖️',
+   pitches:[
+     'Abogado/a mercantilista con {X} años asesorando a startups y scale-ups, participando en rondas de financiación por valor acumulado de 15M€ y 3 procesos de M&A.',
+     'Técnico/a de Cumplimiento (Compliance) con experiencia implantando sistemas de prevención de delitos bajo la ISO 37001 en grupos con presencia en 5 países.',
+     'Abogado/a laboralista con amplia experiencia en negociación colectiva, EREs, ERTEs y defensa en vía judicial con ratio de éxito del 88% en los últimos 3 años.',
+     'Asesor/a jurídico en propiedad intelectual y protección de datos (RGPD), prestando servicio a empresas tecnológicas y agencias de publicidad de ámbito europeo.'
+   ],
+   logros:[
+     'Gestioné cartera de 80 expedientes concursales con tasa de resolución satisfactoria del 92%.',
+     'Redacté contratos-tipo que redujeron los litigios con proveedores en un 60% en 2 años.',
+     'Implementé programa de cumplimiento RGPD para grupo de 500 empleados en 3 meses.',
+     'Asesoré en 12 operaciones M&A con due diligence legal completa en sectores industrial y digital.',
+     'Negocié ERTE colectivo para 150 trabajadores logrando acuerdo con comité en tiempo récord de 10 días.',
+     'Gané el 85% de los procedimientos laborales llevados ante el TSJ en los últimos 2 años.',
+     'Registré 30 marcas nacionales e internacionales con 0 incidencias en el proceso.',
+     'Creé protocolo de privacidad que evitó 2 sanciones AEPD por valor potencial de 200.000€.'
+   ],
+   hardSkills:'Aranzadi, Westlaw, CENDOJ, redacción jurídica, inglés C1, derecho mercantil, laboral y administrativo',
+   softSkills:'rigor analítico, confidencialidad, negociación, atención al detalle, argumentación'
+  },
+  {id:'diseno',name:'Diseño / UX',icon:'🎨',
+   pitches:[
+     'Diseñador/a UX/UI con {X} años creando experiencias digitales centradas en el usuario, reduciendo la tasa de abandono un 35% en aplicaciones de más de 1M de usuarios.',
+     'Diseñador/a gráfico con experiencia en branding para startups y pymes, habiendo construido más de 25 identidades visuales desde cero para clientes en España y LATAM.',
+     'Product Designer con metodología Design Thinking, liderando sprints de diseño que han generado funcionalidades con NPS de 4,6/5 y un aumento de conversión del 28%.',
+     'Motion Designer especializado en animación para campañas de marca, con trabajo publicado en proyectos con +5M de impresiones en redes sociales.'
+   ],
+   logros:[
+     'Rediseñé el flujo de checkout, aumentando la tasa de conversión un 28% y reduciendo el abandono en un 35%.',
+     'Creé sistema de diseño (Design System) utilizado por equipo de 12 devs, reduciendo tiempo de maquetación un 50%.',
+     'Conduje 40 entrevistas de usuario que identificaron 8 pain points críticos, priorizados en el roadmap.',
+     'Diseñé identidad visual de 10 startups, con 3 proyectos premiados en certámenes de diseño nacionales.',
+     'Entregué prototipos de alta fidelidad en Figma con handoff perfecto, reduciendo iteraciones con desarrollo un 40%.',
+     'Mejoré la accesibilidad de la app a nivel AA (WCAG 2.1), ampliando el mercado potencial un 15%.',
+     'Creé campaña de motion graphics con 3M+ visualizaciones orgánicas en redes sociales.',
+     'Lideré workshop de Design Sprint de 5 días que generó un MVP validado con usuarios en 2 semanas.'
+   ],
+   hardSkills:'Figma, Adobe XD, Illustrator, Photoshop, After Effects, Prototyping, Zeplin, Maze (user testing), inglés B2',
+   softSkills:'pensamiento creativo, empatía con el usuario, colaboración multidisciplinar, presentación de ideas'
+  },
+  {id:'operaciones',name:'Logística / Operaciones',icon:'📦',
+   pitches:[
+     'Responsable de Operaciones con {X} años optimizando cadenas de suministro en sector retail, reduciendo los plazos de entrega un 30% y el stock muerto un 40%.',
+     'Jefe/a de Almacén con experiencia gestionando equipos de 25 personas y un flujo de 500 referencias diarias con tasa de error inferior al 0,5%.',
+     'Supply Chain Manager con historial de reducción de costes logísticos del 18% mediante renegociación de contratos con 12 operadores y optimización de rutas.',
+     'Responsable de Compras especializado en negociación internacional, gestionando un presupuesto anual de 5M€ y una cartera de 80 proveedores.'
+   ],
+   logros:[
+     'Reduje el coste logístico un 18% renegociando contratos con 3 operadores principales.',
+     'Implementé WMS que redujo errores de picking del 2,1% al 0,3% en 6 meses.',
+     'Optimicé rutas de distribución, reduciendo el kilometraje un 22% y el consumo de combustible 19K€/año.',
+     'Gestioné la apertura de un nuevo almacén de 5.000m² en tiempo y presupuesto, sin incidencias.',
+     'Reduje el stock muerto un 40% mediante análisis ABC y mejora del proceso de previsión de demanda.',
+     'Negocié acuerdos con proveedores asiáticos con ahorros del 12% manteniendo calidad y plazos.',
+     'Coordiné equipo de 25 operarios, reduciendo la accidentabilidad a cero incidentes con baja en 18 meses.',
+     'Automaticé proceso de pedidos con ERP, eliminando 8 horas de trabajo manual semanal del equipo.'
+   ],
+   hardSkills:'SAP MM/WM, Excel avanzado, WMS (Mecalux, Generix), Power BI, Lean/Kaizen, inglés B1, carnet de conducir B',
+   softSkills:'liderazgo operativo, resolución de problemas, orientación al detalle, gestión bajo presión'
+  }
+];
+
+const FONTS = [
+  {id:'montserrat',name:'Montserrat',style:"font-family:'Montserrat',sans-serif",desc:'Moderna y geométrica — recomendada para tech y diseño'},
+  {id:'lato',name:'Lato',style:"font-family:'Lato',sans-serif",desc:'Legible y equilibrada — ideal para cualquier sector'},
+  {id:'raleway',name:'Raleway',style:"font-family:'Raleway',sans-serif",desc:'Elegante y ligera — perfecta para creativos y dirección'},
+  {id:'dmsans',name:'DM Sans',style:"font-family:'DM Sans',sans-serif",desc:'Limpia y contemporánea — excelente para startups y IT'},
+  {id:'sourceserif',name:'Source Serif 4',style:"font-family:'Source Serif 4',serif",desc:'Serif suave — transmite autoridad (legal, finanzas, academia)'},
+];
+
+const COLORS = [
+  {hex:'#1e3a5f',name:'Azul marino'},
+  {hex:'#1a5276',name:'Azul petróleo'},
+  {hex:'#145a32',name:'Verde bosque'},
+  {hex:'#1e8449',name:'Verde esmeralda'},
+  {hex:'#424242',name:'Gris grafito'},
+  {hex:'#5d4037',name:'Marrón ejecutivo'},
+  {hex:'#4a235a',name:'Morado profundo'},
+  {hex:'#922b21',name:'Burdeos'},
+];
+
+const LANGS = ['Español','Inglés','Francés','Alemán','Portugués','Italiano','Chino','Árabe','Ruso','Catalán','Euskera','Gallego'];
+const LANG_LEVELS = ['Nativo/Materno','C2 – Maestría','C1 – Dominio operativo','B2 – Avanzado','B1 – Intermedio','A2 – Básico','A1 – Elemental'];
+
+let currentSector = SECTORS[0];
+let selectedFont = FONTS[0];
+let selectedColor = COLORS[0];
+let photoData = null;
+let expCount = 0, eduCount = 0, certCount = 0, langCount = 0;
+let lastExpId = 0;
+
+function showPanel(id, navEl) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(navEl) navEl.classList.add('active');
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+}
+
+function renderSectors() {
+  document.getElementById('sector-grid').innerHTML = SECTORS.map(s=>`
+    <div class="sector-card${s.id===currentSector.id?' selected':''}" onclick="selectSector('${s.id}')">
+      <span class="s-icon">${s.icon}</span>
+      <span class="s-name">${s.name}</span>
+    </div>
+  `).join('');
+}
+
+function selectSector(id) {
+  currentSector = SECTORS.find(s=>s.id===id);
+  renderSectors();
+  updateSectorSuggestions();
+}
+
+function updateSectorSuggestions() {
+  const sn = document.getElementById('sector-name-perfil');
+  if(sn) sn.textContent = currentSector.icon+' '+currentSector.name;
+  const ln = document.getElementById('logros-sector-name');
+  if(ln) ln.textContent = currentSector.icon+' '+currentSector.name;
+  const hn = document.getElementById('hard-sector-name');
+  if(hn) hn.textContent = currentSector.icon+' '+currentSector.name;
+
+  const pp = document.getElementById('perfil-pills');
+  if(pp) pp.innerHTML = currentSector.pitches.map(p=>`<span class="pill" onclick="usePitch(\`${p.replace(/`/g,"'")}\`)">${p.substring(0,60)}…</span>`).join('');
+
+  const lp = document.getElementById('logros-pills');
+  if(lp) lp.innerHTML = currentSector.logros.map(l=>`<span class="pill" onclick="appendLogro(\`${l.replace(/`/g,"'")}\`)">+ ${l.substring(0,55)}…</span>`).join('');
+
+  const hp = document.getElementById('hard-pills');
+  if(hp) hp.innerHTML = currentSector.hardSkills.split(',').map(k=>k.trim()).map(k=>`<span class="pill" onclick="appendSkill('hard-skills','${k}')">${k}</span>`).join('');
+
+  const sp = document.getElementById('soft-pills');
+  if(sp) sp.innerHTML = currentSector.softSkills.split(',').map(k=>k.trim()).map(k=>`<span class="pill" onclick="appendSkill('soft-skills','${k}')">${k}</span>`).join('');
+}
+
+function usePitch(text) {
+  document.getElementById('perfil').value = text;
+}
+
+function appendLogro(text) {
+  const ta = document.getElementById('logros-'+lastExpId);
+  if(!ta) { alert('Añade primero una experiencia laboral y haz clic en su campo de logros.'); return; }
+  const cur = ta.value.trim();
+  ta.value = cur ? cur + '\n• ' + text : '• ' + text;
+}
+
+function appendSkill(id, val) {
+  const inp = document.getElementById(id);
+  const cur = inp.value.trim();
+  inp.value = cur ? cur + ', ' + val : val;
+}
+
+function loadPhoto(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    photoData = ev.target.result;
+    const zone = document.getElementById('photo-zone');
+    zone.innerHTML = `<img src="${photoData}" alt="foto perfil">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addExp() {
+  const i = expCount++;
+  lastExpId = i;
+  const d = document.createElement('div');
+  d.className = 'block-item';
+  d.id = 'exp-'+i;
+  d.innerHTML = `
+    <button class="block-remove" onclick="document.getElementById('exp-${i}').remove()">✕</button>
+    <div class="form-grid">
+      <div class="form-group"><label>Empresa</label><input type="text" id="emp-${i}" placeholder="Empresa S.L."></div>
+      <div class="form-group"><label>Cargo / Puesto</label><input type="text" id="cargo-${i}" placeholder="${currentSector.pitches[0].split(' con')[0]}"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Fecha inicio</label><input type="text" id="desde-${i}" placeholder="Ene 2021"></div>
+      <div class="form-group"><label>Fecha fin</label><input type="text" id="hasta-${i}" placeholder="Actualidad"></div>
+    </div>
+    <div class="form-group">
+      <label>Logros y responsabilidades (usa • para viñetas)</label>
+      <textarea id="logros-${i}" rows="4" placeholder="• Lideré equipo de X personas logrando Y resultado…&#10;• Aumenté Z en un N%…" onfocus="lastExpId=${i}"></textarea>
+    </div>
+  `;
+  document.getElementById('exp-list').appendChild(d);
+}
+
+function addEdu() {
+  const i = eduCount++;
+  const d = document.createElement('div');
+  d.className = 'block-item';
+  d.innerHTML = `
+    <button class="block-remove" onclick="this.parentElement.remove()">✕</button>
+    <div class="form-grid">
+      <div class="form-group"><label>Título</label><input type="text" id="edu-titulo-${i}" placeholder="Grado en Administración de Empresas"></div>
+      <div class="form-group"><label>Centro educativo</label><input type="text" id="edu-centro-${i}" placeholder="Universidad Complutense de Madrid"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Año de finalización</label><input type="text" id="edu-anio-${i}" placeholder="2020"></div>
+      <div class="form-group"><label>Nota / Mención (opcional)</label><input type="text" id="edu-nota-${i}" placeholder="Notable / Matrícula de Honor"></div>
+    </div>
+  `;
+  document.getElementById('edu-list').appendChild(d);
+}
+
+function addCert() {
+  const i = certCount++;
+  const d = document.createElement('div');
+  d.className = 'block-item';
+  d.innerHTML = `
+    <button class="block-remove" onclick="this.parentElement.remove()">✕</button>
+    <div class="form-grid">
+      <div class="form-group"><label>Nombre del curso / certificación</label><input type="text" id="cert-nom-${i}" placeholder="Google Analytics Certification, PMP, Scrum Master…"></div>
+      <div class="form-group"><label>Institución / Plataforma</label><input type="text" id="cert-inst-${i}" placeholder="Google, PMI, Coursera, LinkedIn Learning…"></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Año</label><input type="text" id="cert-anio-${i}" placeholder="2023"></div>
+      <div class="form-group"><label>Horas / Créditos (opcional)</label><input type="text" id="cert-horas-${i}" placeholder="40h / 3 ECTS"></div>
+    </div>
+  `;
+  document.getElementById('cert-list').appendChild(d);
+}
+
+function addLang() {
+  const i = langCount++;
+  const d = document.createElement('div');
+  d.className = 'block-item';
+  d.innerHTML = `
+    <button class="block-remove" onclick="this.parentElement.remove()">✕</button>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Idioma</label>
+        <select id="lang-nom-${i}">
+          ${LANGS.map(l=>`<option value="${l}">${l}</option>`).join('')}
+          <option value="otro">Otro…</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nivel (Marco Común Europeo)</label>
+        <select id="lang-lvl-${i}">
+          ${LANG_LEVELS.map(l=>`<option value="${l}">${l}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Certificado oficial (opcional)</label><input type="text" id="lang-cert-${i}" placeholder="First Certificate, DELF B2, Goethe B1…"></div>
+  `;
+  document.getElementById('lang-list').appendChild(d);
+}
+
+function renderFonts() {
+  document.getElementById('font-opts').innerHTML = FONTS.map(f=>`
+    <div class="font-option${f.id===selectedFont.id?' selected':''}" onclick="selectFont('${f.id}')">
+      <span class="font-preview" style="${f.style}">${f.name} — AaBbCc 123</span>
+      <span class="font-meta">${f.desc}</span>
+    </div>
+  `).join('');
+}
+
+function selectFont(id) {
+  selectedFont = FONTS.find(f=>f.id===id);
+  renderFonts();
+}
+
+function renderColors() {
+  document.getElementById('color-opts').innerHTML = COLORS.map(c=>`
+    <div class="color-dot${c.hex===selectedColor.hex?' selected':''}" style="background:${c.hex}" title="${c.name}" onclick="selectColor('${c.hex}','${c.name}')"></div>
+  `).join('');
+}
+
+function selectColor(hex, name) {
+  selectedColor = {hex, name};
+  renderColors();
+}
+
+function buildPreview() {
+  const nombre = document.getElementById('nombre').value || 'Tu Nombre';
+  const puesto = document.getElementById('puesto').value || currentSector.name;
+  const tel = document.getElementById('telefono').value;
+  const email = document.getElementById('email').value;
+  const ciudad = document.getElementById('ciudad').value;
+  const linkedin = document.getElementById('linkedin').value;
+  const perfil = document.getElementById('perfil').value;
+  const hardSkills = document.getElementById('hard-skills').value;
+  const softSkills = document.getElementById('soft-skills').value;
+  const carnet = document.getElementById('carnet').value;
+  const nac = document.getElementById('nacionalidad').value;
+
+  const accentColor = selectedColor.hex;
+  const fontStyle = selectedFont.style;
+  const contactLine = [tel, email, ciudad, linkedin, carnet, nac ? '🌍 '+nac : ''].filter(Boolean).join(' · ');
+
+  let expHTML = '';
+  for(let i=0;i<expCount;i++){
+    const el = document.getElementById('emp-'+i);
+    if(!el) continue;
+    const cargo = document.getElementById('cargo-'+i).value;
+    const emp = el.value;
+    const desde = document.getElementById('desde-'+i).value;
+    const hasta = document.getElementById('hasta-'+i).value;
+    const logros = document.getElementById('logros-'+i).value;
+    if(!cargo && !emp) continue;
+    const period = [desde, hasta].filter(Boolean).join(' – ');
+    const bullets = logros ? logros.split('\n').filter(l=>l.trim()).map(l=>`<div class="cv-bullet">${l.replace(/^[•\-▪]\s*/,'')}</div>`).join('') : '';
+    expHTML += `<div style="margin-bottom:10px">
+      <div class="cv-job-title">${cargo}${emp?' — '+emp:''}</div>
+      ${period?`<div class="cv-job-meta">${period}</div>`:''}
+      ${bullets}
+    </div>`;
+  }
+
+  let eduHTML = '';
+  for(let i=0;i<eduCount;i++){
+    const t = document.getElementById('edu-titulo-'+i);
+    if(!t||!t.value) continue;
+    const centro = document.getElementById('edu-centro-'+i).value;
+    const anio = document.getElementById('edu-anio-'+i).value;
+    const nota = document.getElementById('edu-nota-'+i).value;
+    eduHTML += `<div style="margin-bottom:8px">
+      <div class="cv-job-title">${t.value}</div>
+      <div class="cv-job-meta">${[centro, anio, nota].filter(Boolean).join(' · ')}</div>
+    </div>`;
+  }
+
+  let certHTML = '';
+  for(let i=0;i<certCount;i++){
+    const n = document.getElementById('cert-nom-'+i);
+    if(!n||!n.value) continue;
+    const inst = document.getElementById('cert-inst-'+i).value;
+    const anio = document.getElementById('cert-anio-'+i).value;
+    const horas = document.getElementById('cert-horas-'+i).value;
+    certHTML += `<div class="cv-lang-row"><span>${n.value}${inst?' · '+inst:''}</span><span style="color:${accentColor}">${[anio,horas].filter(Boolean).join(' · ')}</span></div>`;
+  }
+
+  let langHTML = '';
+  for(let i=0;i<langCount;i++){
+    const nom = document.getElementById('lang-nom-'+i);
+    if(!nom) continue;
+    const lvl = document.getElementById('lang-lvl-'+i).value;
+    const cert = document.getElementById('lang-cert-'+i).value;
+    langHTML += `<div class="cv-lang-row"><span style="font-weight:600">${nom.value}</span><span style="color:${accentColor}">${lvl}${cert?' · '+cert:''}</span></div>`;
+  }
+
+  const hardArr = hardSkills.split(',').map(s=>s.trim()).filter(Boolean);
+  const softArr = softSkills.split(',').map(s=>s.trim()).filter(Boolean);
+
+  const photoHtml = photoData
+    ? `<div class="cv-photo-box"><img src="${photoData}" alt="foto"></div>`
+    : '';
+
+  const rightCol = `
+    ${langHTML ? `<div class="cv-section-title" style="color:${accentColor}">Idiomas</div><div>${langHTML}</div>` : ''}
+    ${certHTML ? `<div class="cv-section-title" style="color:${accentColor}">Formación complementaria</div><div>${certHTML}</div>` : ''}
+    ${softArr.length ? `<div class="cv-section-title" style="color:${accentColor}">Competencias</div><div class="cv-skills-grid">${softArr.map(s=>`<span class="cv-skill" style="background:${accentColor}15;color:${accentColor}">${s}</span>`).join('')}</div>` : ''}
+  `;
+
+  document.getElementById('cv-preview-box').innerHTML = `
+    <div class="cv-inner" style="${fontStyle};color:#222">
+      <div class="cv-header" style="border-color:${accentColor}">
+        ${photoHtml}
+        <div class="cv-name-block">
+          <div class="cv-fullname" style="color:${accentColor}">${nombre}</div>
+          <div class="cv-jobtitle">${puesto}</div>
+          <div class="cv-contact-row">${contactLine}</div>
+        </div>
+      </div>
+      ${perfil?`<div class="cv-section-title" style="color:${accentColor}">Perfil profesional</div><p class="cv-profile">${perfil}</p>`:''}
+      <div class="cv-two-col">
+        <div>
+          ${expHTML?`<div class="cv-section-title" style="color:${accentColor}">Experiencia laboral</div>${expHTML}`:''}
+          ${eduHTML?`<div class="cv-section-title" style="color:${accentColor}">Formación académica</div>${eduHTML}`:''}
+          ${hardArr.length?`<div class="cv-section-title" style="color:${accentColor}">Habilidades técnicas</div><div class="cv-skills-grid">${hardArr.map(s=>`<span class="cv-skill" style="background:${accentColor}20;color:${accentColor}">${s}</span>`).join('')}</div>`:''}
+        </div>
+        <div>${rightCol}</div>
+      </div>
+      <div style="margin-top:20px;border-top:1px solid #eee;padding-top:8px;font-size:9px;color:#bbb;text-align:center">Generado con CVPro · Formato recomendado: PDF · Fuente: ${selectedFont.name}</div>
+    </div>
+  `;
+}
+
+function exportPDF() {
+  buildPreview();
+  showPanel('panel-preview', document.querySelectorAll('.nav-item')[7]);
+  setTimeout(() => window.print(), 400);
+}
+
+// INIT
+renderSectors();
+updateSectorSuggestions();
+renderFonts();
+renderColors();
+addExp();
+addEdu();
+addLang();
+</script>
